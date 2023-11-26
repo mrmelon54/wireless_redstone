@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "mixin": [
+    "wireless_redstone.mixins.json",
+    "wireless_redstone-common.mixins.json"
+  ],
+  "quilt_loader": {
+    "group": "${group}",
+    "id": "wireless_redstone",
+    "version": "${version}",
+    "metadata": {
+      "name": "Wireless Redstone",
+      "description": "Wireless Redstone, what more can I say?",
+      "contributors": {
+        "MrMelon54": "Owner"
+      },
+      "contact": {
+        "homepage": "https://mrmelon54.com/minecraft/wireless-redstone",
+        "sources": "https://github.com/MrMelon54/wireless_redstone",
+        "issues": "https://github.com/MrMelon54/wireless_redstone/issues"
+      },
+      "license": "GPL-3.0-only",
+      "icon": "icon.png"
+    },
+    "intermediate_mappings": "net.fabricmc:intermediary",
+    "entrypoints": {
+      "init": [
+        "com.mrmelon54.WirelessRedstone.quilt.WirelessRedstoneQuilt"
+      ]
+    },
+    "depends": [
+      {
+        "id": "quilt_loader",
+        "version": "*"
+      },
+      {
+        "id": "quilt_base",
+        "version": "*"
+      },
+      {
+        "id": "minecraft",
+        "version": ">=1.20"
+      },
+      {
+        "id": "architectury",
+        "version": ">=9.0.0"
+      }
+    ]
+  },
+  "minecraft": {
+    "environment": "*"
+  }
+}

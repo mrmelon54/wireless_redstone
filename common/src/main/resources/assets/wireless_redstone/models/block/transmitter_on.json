@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "side": "wireless_redstone:block/transmitter_on",
+    "end": "wireless_redstone:block/transmitter_side"
+  }
+}
