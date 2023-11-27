@@ -4,7 +4,6 @@ import com.mrmelon54.WirelessRedstone.WirelessRedstone;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.AbstractFurnaceMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.item.ItemStack;
@@ -15,7 +14,6 @@ public class WirelessFrequencyContainerMenu extends AbstractContainerMenu implem
 
     public WirelessFrequencyContainerMenu(int syncId, Inventory inventory, ContainerLevelAccess aNull) {
         super(WirelessRedstone.WIRELESS_FREQUENCY_SCREEN, syncId);
-        AbstractFurnaceMenu
         addSlotListener(this);
     }
 

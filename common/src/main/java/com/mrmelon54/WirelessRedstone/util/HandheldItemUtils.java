@@ -78,7 +78,7 @@ public class HandheldItemUtils {
 
         UUID uuid = compoundTag.getUUID(WirelessHandheldItem.WIRELESS_HANDHELD_UUID);
         int freq = compoundTag.getInt(WirelessHandheldItem.WIRELESS_HANDHELD_FREQ);
-        WirelessRedstone.getWirelessHandheld(level.dimension()).add(new TransmittingHandheldEntry(uuid, freq));
+        WirelessRedstone.getDimensionSavedData(level).getHandheld().add(new TransmittingHandheldEntry(uuid, freq));
     }
 
     public static void removeHandheldEntry(ItemStack stack, ServerLevel level) {
@@ -86,6 +86,6 @@ public class HandheldItemUtils {
 
         CompoundTag compound = WirelessHandheldItem.getOrCreateNbt(stack);
         UUID uuid = compound.getUUID(WirelessHandheldItem.WIRELESS_HANDHELD_UUID);
-        WirelessRedstone.getWirelessHandheld(level.dimension()).removeIf(transmittingHandheldEntry -> transmittingHandheldEntry.handheldUuid().equals(uuid));
+        WirelessRedstone.getDimensionSavedData(level).getHandheld().removeIf(transmittingHandheldEntry -> transmittingHandheldEntry.handheldUuid().equals(uuid));
     }
 }

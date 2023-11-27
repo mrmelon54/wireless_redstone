@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -35,12 +36,12 @@ public class WirelessHandheldItem extends Item implements MenuProvider {
     }
 
     @Override
-    public UseAnim getUseAnimation(ItemStack itemStack) {
+    public @NotNull UseAnim getUseAnimation(ItemStack itemStack) {
         return UseAnim.EAT;
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand interactionHand) {
+    public @NotNull InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand interactionHand) {
         ItemStack itemStack = player.getItemInHand(interactionHand);
         if (player.isCrouching()) {
             player.openMenu(this);
@@ -57,10 +58,10 @@ public class WirelessHandheldItem extends Item implements MenuProvider {
         if (v) {
             UUID uuid = UUID.randomUUID();
             compoundTag.putUUID(WIRELESS_HANDHELD_UUID, uuid);
-            WirelessRedstone.getWirelessHandheld(level.dimension()).add(new TransmittingHandheldEntry(uuid, freq));
+            WirelessRedstone.getDimensionSavedData(level).getHandheld().add(new TransmittingHandheldEntry(uuid, freq));
         } else {
             UUID uuid = compoundTag.getUUID(WIRELESS_HANDHELD_UUID);
-            WirelessRedstone.getWirelessHandheld(level.dimension()).removeIf(transmittingFrequencyEntry -> transmittingFrequencyEntry.handheldUuid().equals(uuid));
+            WirelessRedstone.getDimensionSavedData(level).getHandheld().removeIf(transmittingHandheldEntry -> transmittingHandheldEntry.handheldUuid().equals(uuid));
         }
 
         WirelessRedstone.sendTickScheduleToReceivers(level);
@@ -68,7 +69,7 @@ public class WirelessHandheldItem extends Item implements MenuProvider {
     }
 
     @Override
-    public Component getDisplayName() {
+    public @NotNull Component getDisplayName() {
         return Component.translatable(getDescriptionId());
     }
 
@@ -116,7 +117,7 @@ public class WirelessHandheldItem extends Item implements MenuProvider {
         UUID uuid = compoundTag.getUUID(WIRELESS_HANDHELD_UUID);
         compoundTag.putBoolean(WIRELESS_HANDHELD_ENABLED, false);
 
-        WirelessRedstone.getWirelessHandheld(itemEntity.level().dimension()).removeIf(transmittingHandheldEntry -> transmittingHandheldEntry.handheldUuid().equals(uuid));
+        WirelessRedstone.getDimensionSavedData(itemEntity.level()).getHandheld().removeIf(transmittingHandheldEntry -> transmittingHandheldEntry.handheldUuid().equals(uuid));
 
         WirelessRedstone.sendTickScheduleToReceivers(itemEntity.level());
     }

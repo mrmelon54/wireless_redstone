@@ -47,10 +47,6 @@ allprojects {
             name = 'CottonMC'
             url = 'https://server.bbkr.space/artifactory/libs-release'
         }
-        maven {
-            name = 'Ladysnake Mods'
-            url = 'https://ladysnake.jfrog.io/artifactory/mods'
-        }
     }
 
     tasks.withType(JavaCompile) {

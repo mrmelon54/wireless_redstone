@@ -9,21 +9,24 @@ import com.mrmelon54.WirelessRedstone.screen.WirelessFrequencyContainerMenu;
 import com.mrmelon54.WirelessRedstone.screen.WirelessFrequencyScreen;
 import com.mrmelon54.WirelessRedstone.util.HandheldItemUtils;
 import com.mrmelon54.WirelessRedstone.util.NetworkingConstants;
-import com.mrmelon54.WirelessRedstone.util.TransmittingFrequencyEntry;
-import com.mrmelon54.WirelessRedstone.util.TransmittingHandheldEntry;
 import dev.architectury.event.events.common.ChunkEvent;
+import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.CreativeTabRegistry;
+import dev.architectury.registry.menu.MenuRegistry;
 import dev.architectury.registry.registries.Registrar;
 import dev.architectury.registry.registries.RegistrarManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.MenuType;
@@ -37,11 +40,11 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.storage.LevelResource;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
@@ -60,38 +63,12 @@ public class WirelessRedstone {
 
     public static final Supplier<RegistrarManager> MANAGER = Suppliers.memoize(() -> RegistrarManager.get(MOD_ID));
 
-    // === Loaded entries ===
-    private static final Map<ResourceKey<Level>, Set<BlockPos>> wirelessReceivers = new HashMap<>();
-    private static final Map<ResourceKey<Level>, Set<TransmittingFrequencyEntry>> wirelessTransmitting = new HashMap<>();
-    private static final Map<ResourceKey<Level>, Set<TransmittingHandheldEntry>> wirelessHandheld = new HashMap<>();
+    private static final Map<ResourceKey<Level>, WirelessFrequencySavedData> levelData = new HashMap<>();
 
-    public static Set<BlockPos> getWirelessReceivers(ResourceKey<Level> levelKey) {
-        Set<BlockPos> z = wirelessReceivers.get(levelKey);
-        if (z == null) {
-            z = new HashSet<>();
-            wirelessReceivers.put(levelKey, new HashSet<>());
-        }
-        return z;
+    public static WirelessFrequencySavedData getDimensionSavedData(Level level) {
+        System.out.println("getDimensionSavedData(" + level.dimension() + ")");
+        return levelData.getOrDefault(level.dimension(), new WirelessFrequencySavedData(new CompoundTag()));
     }
-
-    public static Set<TransmittingFrequencyEntry> getWirelessTransmitting(ResourceKey<Level> levelKey) {
-        Set<TransmittingFrequencyEntry> z = wirelessTransmitting.get(levelKey);
-        if (z == null) {
-            z = new HashSet<>();
-            wirelessTransmitting.put(levelKey, new HashSet<>());
-        }
-        return z;
-    }
-
-    public static Set<TransmittingHandheldEntry> getWirelessHandheld(ResourceKey<Level> levelKey) {
-        Set<TransmittingHandheldEntry> z = wirelessHandheld.get(levelKey);
-        if (z == null) {
-            z = new HashSet<>();
-            wirelessHandheld.put(levelKey, new HashSet<>());
-        }
-        return z;
-    }
-    // === /Loaded entries ===
 
     public static void init() {
         PlayerEvent.PLAYER_JOIN.register(player -> HandheldItemUtils.addHandheldFromPlayer(player, player.serverLevel()));
@@ -127,12 +104,35 @@ public class WirelessRedstone {
 
         itemReg.register(new ResourceLocation(MOD_ID, "handheld"), () -> WIRELESS_HANDHELD);
 
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, NetworkingConstants.WIRELESS_FREQUENCY_CHANGE_PACKET_ID, new NetworkManager.NetworkReceiver() {
-            @Override
-            public void receive(FriendlyByteBuf buf, NetworkManager.PacketContext context) {
-                if (context.getPlayer().containerMenu instanceof WirelessFrequencyContainerMenu wirelessFrequencyContainerMenu) {
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, NetworkingConstants.WIRELESS_FREQUENCY_CHANGE_PACKET_ID, (buf, context) -> {
+            if (context.getPlayer().containerMenu instanceof WirelessFrequencyContainerMenu wirelessFrequencyContainerMenu) {
+                wirelessFrequencyContainerMenu.setData(0, buf.readInt());
+            }
+        });
 
-                }
+        LifecycleEvent.SERVER_LEVEL_LOAD.register(new LifecycleEvent.ServerLevelState() {
+            @Override
+            public void act(ServerLevel world) {
+                System.out.println("=== Level load event ===");
+                System.out.println("Level path: " + world.getServer().getWorldPath(LevelResource.ROOT));
+                System.out.println("Is client side: " + world.isClientSide);
+                WirelessFrequencySavedData savedData = world.getDataStorage().get(WirelessFrequencySavedData::new, MOD_ID);
+                levelData.put(world.dimension(), savedData);
+            }
+        });
+
+        LifecycleEvent.SERVER_LEVEL_SAVE.register(new LifecycleEvent.ServerLevelState() {
+            @Override
+            public void act(ServerLevel world) {
+                System.out.println("=== Level save event ===");
+                System.out.println("Level path: " + world.getServer().getWorldPath(LevelResource.ROOT));
+                System.out.println("Is client side: " + world.isClientSide);
+                levelData.forEach(new BiConsumer<ResourceKey<Level>, WirelessFrequencySavedData>() {
+                    @Override
+                    public void accept(ResourceKey<Level> levelResourceKey, WirelessFrequencySavedData wirelessFrequencySavedData) {
+                        world.getDataStorage().set(MOD_ID, wirelessFrequencySavedData);
+                    }
+                });
             }
         });
 
@@ -141,16 +141,22 @@ public class WirelessRedstone {
 
     @Environment(EnvType.CLIENT)
     public static void clientInit() {
-        dev.architectury.registry.menu.MenuRegistry.registerScreenFactory(WirelessRedstone.WIRELESS_FREQUENCY_SCREEN, (gui, inventory, title) -> new WirelessFrequencyScreen(gui, inventory.player, title));
+        //noinspection Convert2Lambda
+        MenuRegistry.registerScreenFactory(WirelessRedstone.WIRELESS_FREQUENCY_SCREEN, new MenuRegistry.ScreenFactory<WirelessFrequencyContainerMenu, WirelessFrequencyScreen>() {
+            @Override
+            public WirelessFrequencyScreen create(WirelessFrequencyContainerMenu containerMenu, Inventory inventory, Component component) {
+                return new WirelessFrequencyScreen(containerMenu, inventory.player, component);
+            }
+        });
     }
 
     public static void sendTickScheduleToReceivers(Level level) {
-        WirelessRedstone.getWirelessReceivers(level.dimension()).forEach(blockPos -> level.scheduleTick(blockPos, WirelessRedstone.WIRELESS_RECEIVER, 0));
+        getDimensionSavedData(level).getReceivers().forEach(blockPos -> level.scheduleTick(blockPos, WIRELESS_RECEIVER, 0));
     }
 
     public static boolean hasLitTransmitterOnFrequency(Level level, long frequency) {
-        return WirelessRedstone.getWirelessTransmitting(level.dimension()).stream().anyMatch(x -> x.freq() == frequency)
-                || WirelessRedstone.getWirelessHandheld(level.dimension()).stream().anyMatch(x -> x.freq() == frequency);
+        return getDimensionSavedData(level).getTransmitting().stream().anyMatch(x -> x.freq() == frequency)
+                || getDimensionSavedData(level).getHandheld().stream().anyMatch(x -> x.freq() == frequency);
     }
 
     private static ToIntFunction<BlockState> litFrequencyBlockEmission() {

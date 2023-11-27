@@ -1,7 +1,7 @@
 package com.mrmelon54.WirelessRedstone.forge;
 
-import dev.architectury.platform.forge.EventBuses;
 import com.mrmelon54.WirelessRedstone.WirelessRedstone;
+import dev.architectury.platform.forge.EventBuses;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
