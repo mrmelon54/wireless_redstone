@@ -2,20 +2,19 @@ package com.mrmelon54.WirelessRedstone.item;
 
 import com.mrmelon54.WirelessRedstone.WirelessFrequencySavedData;
 import com.mrmelon54.WirelessRedstone.WirelessRedstone;
+import com.mrmelon54.WirelessRedstone.packet.HandheldFrequencyChangeC2SPacket;
+import com.mrmelon54.WirelessRedstone.screen.WirelessFrequencyScreen;
 import com.mrmelon54.WirelessRedstone.util.TransmittingHandheldEntry;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -25,10 +24,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
-public class WirelessHandheldItem extends Item implements MenuProvider {
+public class WirelessHandheldItem extends Item {
     public static final String WIRELESS_HANDHELD_UUID = "wireless_handheld_uuid";
     public static final String WIRELESS_HANDHELD_ENABLED = "wireless_handheld_enabled";
     public static final String WIRELESS_HANDHELD_FREQ = "wireless_handheld_freq";
@@ -50,10 +48,14 @@ public class WirelessHandheldItem extends Item implements MenuProvider {
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand interactionHand) {
         ItemStack itemStack = player.getItemInHand(interactionHand);
+
         if (player.isCrouching()) {
-            player.openMenu(this);
+            if (player.isLocalPlayer())
+                Minecraft.getInstance().setScreen(new WirelessFrequencyScreen(HandheldFrequencyChangeC2SPacket::new));
             return InteractionResultHolder.pass(itemStack);
         }
+
+        if (player.isLocalPlayer()) return InteractionResultHolder.pass(itemStack);
 
         CompoundTag compoundTag = getOrCreateNbt(itemStack);
         if (compoundTag == null) return InteractionResultHolder.fail(itemStack);
@@ -72,18 +74,13 @@ public class WirelessHandheldItem extends Item implements MenuProvider {
 
         if (v) {
             UUID uuid2 = UUID.randomUUID();
-            compoundTag.putUUID(WIRELESS_HANDHELD_UUID, uuid);
-            dim.getHandheld().add(new TransmittingHandheldEntry(uuid, freq));
+            compoundTag.putUUID(WIRELESS_HANDHELD_UUID, uuid2);
+            dim.getHandheld().add(new TransmittingHandheldEntry(uuid2, freq));
         }
         dim.setDirty();
 
         WirelessRedstone.sendTickScheduleToReceivers(level);
         return InteractionResultHolder.consume(itemStack);
-    }
-
-    @Override
-    public @NotNull Component getDisplayName() {
-        return Component.translatable(getDescriptionId());
     }
 
     @Override
@@ -97,48 +94,6 @@ public class WirelessHandheldItem extends Item implements MenuProvider {
         int freq = compoundTag.getInt(WIRELESS_HANDHELD_FREQ);
         MutableComponent freqTooltip = Component.translatable("item.wireless_redstone.item.tooltip-frequency", freq);
         list.add(enabled ? freqTooltip.withStyle(ChatFormatting.GREEN) : freqTooltip.withStyle(ChatFormatting.RED));
-    }
-
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
-        return new WirelessFrequencyContainerMenu(i, new ContainerData() {
-            @Override
-            public int get(int i) {
-                ItemStack stackInHand = player.getMainHandItem();
-                CompoundTag compound = WirelessHandheldItem.getOrCreateNbt(stackInHand);
-                if (compound == null) return 0;
-                return compound.getInt(WIRELESS_HANDHELD_FREQ);
-            }
-
-            @Override
-            public void set(int i, int j) {
-                ItemStack stackInHand = player.getMainHandItem();
-                CompoundTag compound = WirelessHandheldItem.getOrCreateNbt(stackInHand);
-                if (compound == null) return;
-
-                boolean enabled = compound.getBoolean(WirelessHandheldItem.WIRELESS_HANDHELD_ENABLED);
-                compound.putInt(WirelessHandheldItem.WIRELESS_HANDHELD_FREQ, i);
-
-                // remove old transmit signal and replace it
-                Set<TransmittingHandheldEntry> handheld = WirelessRedstone.getDimensionSavedData(player.level()).getHandheld();
-                if (enabled) {
-                    UUID uuid = compound.getUUID(WirelessHandheldItem.WIRELESS_HANDHELD_UUID);
-                    handheld.removeIf(x -> x.handheldUuid().equals(uuid));
-
-                    UUID uuid1 = UUID.randomUUID();
-                    compound.putUUID(WirelessHandheldItem.WIRELESS_HANDHELD_UUID, uuid1);
-                    handheld.add(new TransmittingHandheldEntry(uuid1, i));
-                }
-
-                WirelessRedstone.sendTickScheduleToReceivers(player.level());
-            }
-
-            @Override
-            public int getCount() {
-                return 1;
-            }
-        });
     }
 
     public static CompoundTag getOrCreateNbt(ItemStack itemStack) {

@@ -7,8 +7,8 @@ import com.mrmelon54.WirelessRedstone.block.entity.WirelessReceiverBlockEntity;
 import com.mrmelon54.WirelessRedstone.block.entity.WirelessTransmitterBlockEntity;
 import com.mrmelon54.WirelessRedstone.item.WirelessHandheldItem;
 import com.mrmelon54.WirelessRedstone.models.HandheldModelProvider;
+import com.mrmelon54.WirelessRedstone.packet.BlockFrequencyChangeC2SPacket;
 import com.mrmelon54.WirelessRedstone.packet.HandheldFrequencyChangeC2SPacket;
-import com.mrmelon54.WirelessRedstone.screen.WirelessFrequencyScreen;
 import com.mrmelon54.WirelessRedstone.util.HandheldItemUtils;
 import com.mrmelon54.WirelessRedstone.util.NetworkingConstants;
 import dev.architectury.event.events.common.ChunkEvent;
@@ -16,19 +16,14 @@ import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.item.ItemPropertiesRegistry;
-import dev.architectury.registry.menu.MenuRegistry;
 import dev.architectury.registry.registries.Registrar;
 import dev.architectury.registry.registries.RegistrarManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -57,7 +52,6 @@ public class WirelessRedstone {
     public static final Item WIRELESS_HANDHELD = new WirelessHandheldItem(new Item.Properties().stacksTo(1));
     public static BlockEntityType<WirelessTransmitterBlockEntity> WIRELESS_TRANSMITTER_BLOCK_ENTITY;
     public static BlockEntityType<WirelessReceiverBlockEntity> WIRELESS_RECEIVER_BLOCK_ENTITY;
-    public static MenuType<WirelessFrequencyContainerMenu> WIRELESS_FREQUENCY_SCREEN;
 
     public static final Supplier<RegistrarManager> MANAGER = Suppliers.memoize(() -> RegistrarManager.get(MOD_ID));
 
@@ -86,23 +80,6 @@ public class WirelessRedstone {
         Registrar<Item> itemReg = MANAGER.get().get(Registries.ITEM);
         Registrar<BlockEntityType<?>> blockEntityReg = MANAGER.get().get(Registries.BLOCK_ENTITY_TYPE);
 
-        WIRELESS_FREQUENCY_SCREEN = new MenuType<>(((syncId, inventory) -> new WirelessFrequencyContainerMenu(syncId, new ContainerData() {
-            @Override
-            public int get(int i) {
-                return 0;
-            }
-
-            @Override
-            public void set(int i, int j) {
-            }
-
-            @Override
-            public int getCount() {
-                return 1;
-            }
-        })), FeatureFlagSet.of());
-        menuReg.register(new ResourceLocation(MOD_ID, "frequency_screen"), () -> WIRELESS_FREQUENCY_SCREEN);
-
         blockReg.register(new ResourceLocation(MOD_ID, "transmitter"), () -> WIRELESS_TRANSMITTER);
         itemReg.register(new ResourceLocation(MOD_ID, "transmitter"), () -> WIRELESS_TRANSMITTER_ITEM);
         WIRELESS_TRANSMITTER_BLOCK_ENTITY = BlockEntityType.Builder.of(WirelessTransmitterBlockEntity::new, WIRELESS_TRANSMITTER).build(null);
@@ -115,6 +92,7 @@ public class WirelessRedstone {
 
         itemReg.register(new ResourceLocation(MOD_ID, "handheld"), () -> WIRELESS_HANDHELD);
 
+        NetworkingConstants.CHANNEL.register(BlockFrequencyChangeC2SPacket.class, BlockFrequencyChangeC2SPacket::encode, BlockFrequencyChangeC2SPacket::decode, BlockFrequencyChangeC2SPacket::apply);
         NetworkingConstants.CHANNEL.register(HandheldFrequencyChangeC2SPacket.class, HandheldFrequencyChangeC2SPacket::encode, HandheldFrequencyChangeC2SPacket::decode, HandheldFrequencyChangeC2SPacket::apply);
 
         LifecycleEvent.SERVER_LEVEL_LOAD.register(world -> {
@@ -129,14 +107,6 @@ public class WirelessRedstone {
 
     @Environment(EnvType.CLIENT)
     public static void clientInit() {
-        //noinspection Convert2Lambda
-        MenuRegistry.registerScreenFactory(WirelessRedstone.WIRELESS_FREQUENCY_SCREEN, new MenuRegistry.ScreenFactory<WirelessFrequencyContainerMenu, WirelessFrequencyScreen>() {
-            @Override
-            public WirelessFrequencyScreen create(WirelessFrequencyContainerMenu containerMenu, Inventory inventory, Component component) {
-                return new WirelessFrequencyScreen(containerMenu, inventory.player, component);
-            }
-        });
-
         ItemPropertiesRegistry.register(WirelessRedstone.WIRELESS_HANDHELD, new ResourceLocation("wireless_redstone_handheld_enabled"), new HandheldModelProvider());
     }
 

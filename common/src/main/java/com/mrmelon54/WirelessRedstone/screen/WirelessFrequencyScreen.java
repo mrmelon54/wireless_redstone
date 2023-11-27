@@ -1,6 +1,5 @@
 package com.mrmelon54.WirelessRedstone.screen;
 
-import com.mrmelon54.WirelessRedstone.packet.HandheldFrequencyChangeC2SPacket;
 import com.mrmelon54.WirelessRedstone.util.NetworkingConstants;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -9,16 +8,18 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.entity.player.Player;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 public class WirelessFrequencyScreen extends Screen {
     private static final ResourceLocation MENU_LOCATION = new ResourceLocation("wireless_redstone:textures/gui/frequency.png");
+    private final Function<Integer, ?> genPacket;
     private EditBox freqBox;
 
-    public WirelessFrequencyScreen(Player player) {
+    public WirelessFrequencyScreen(Function<Integer, ?> genPacket) {
         super(Component.translatable("screen.wireless_redstone.set_frequency"));
+        this.genPacket = genPacket;
         init();
     }
 
@@ -75,6 +76,6 @@ public class WirelessFrequencyScreen extends Screen {
         int freq = 0;
         if (!Objects.equals(s, ""))
             freq = Integer.parseInt(s);
-        NetworkingConstants.CHANNEL.sendToServer(new HandheldFrequencyChangeC2SPacket(freq));
+        NetworkingConstants.CHANNEL.sendToServer(genPacket.apply(freq));
     }
 }
