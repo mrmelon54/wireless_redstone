@@ -1,7 +1,9 @@
 package com.mrmelon54.WirelessRedstone.block;
 
+import com.mrmelon54.WirelessRedstone.WirelessFrequencySavedData;
 import com.mrmelon54.WirelessRedstone.WirelessRedstone;
 import com.mrmelon54.WirelessRedstone.block.entity.WirelessTransmitterBlockEntity;
+import com.mrmelon54.WirelessRedstone.util.TransmittingFrequencyEntry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -9,6 +11,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Set;
+import java.util.function.Predicate;
 
 public class WirelessTransmitterBlock extends WirelessFrequencyBlock {
     public WirelessTransmitterBlock(Properties properties) {
@@ -47,8 +52,11 @@ public class WirelessTransmitterBlock extends WirelessFrequencyBlock {
     }
 
     private void updateWirelessFrequency(Level level, BlockPos blockPos, boolean isPowered, long freq) {
-        // TODO: add entries here
-
+        WirelessFrequencySavedData dim = WirelessRedstone.getDimensionSavedData(level);
+        Set<TransmittingFrequencyEntry> transmitting = dim.getTransmitting();
+        if (isPowered) transmitting.add(new TransmittingFrequencyEntry(blockPos.immutable(), freq));
+        else transmitting.removeIf(x -> x.blockPos().equals(blockPos));
+        dim.setDirty();
         WirelessRedstone.sendTickScheduleToReceivers(level);
     }
 

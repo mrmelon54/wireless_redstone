@@ -1,5 +1,6 @@
 package com.mrmelon54.WirelessRedstone.util;
 
+import com.mrmelon54.WirelessRedstone.WirelessFrequencySavedData;
 import com.mrmelon54.WirelessRedstone.WirelessRedstone;
 import com.mrmelon54.WirelessRedstone.item.WirelessHandheldItem;
 import net.minecraft.nbt.CompoundTag;
@@ -78,7 +79,9 @@ public class HandheldItemUtils {
 
         UUID uuid = compoundTag.getUUID(WirelessHandheldItem.WIRELESS_HANDHELD_UUID);
         int freq = compoundTag.getInt(WirelessHandheldItem.WIRELESS_HANDHELD_FREQ);
-        WirelessRedstone.getDimensionSavedData(level).getHandheld().add(new TransmittingHandheldEntry(uuid, freq));
+        WirelessFrequencySavedData dim = WirelessRedstone.getDimensionSavedData(level);
+        dim.getHandheld().add(new TransmittingHandheldEntry(uuid, freq));
+        dim.setDirty();
     }
 
     public static void removeHandheldEntry(ItemStack stack, ServerLevel level) {
@@ -86,6 +89,8 @@ public class HandheldItemUtils {
 
         CompoundTag compound = WirelessHandheldItem.getOrCreateNbt(stack);
         UUID uuid = compound.getUUID(WirelessHandheldItem.WIRELESS_HANDHELD_UUID);
-        WirelessRedstone.getDimensionSavedData(level).getHandheld().removeIf(transmittingHandheldEntry -> transmittingHandheldEntry.handheldUuid().equals(uuid));
+        WirelessFrequencySavedData dim = WirelessRedstone.getDimensionSavedData(level);
+        dim.getHandheld().removeIf(transmittingHandheldEntry -> transmittingHandheldEntry.handheldUuid().equals(uuid));
+        dim.setDirty();
     }
 }

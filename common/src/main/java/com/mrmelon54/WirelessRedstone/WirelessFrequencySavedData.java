@@ -9,6 +9,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -17,6 +18,9 @@ public class WirelessFrequencySavedData extends SavedData implements WirelessFre
     private final Set<BlockPos> receivers = new HashSet<>();
     private final Set<TransmittingFrequencyEntry> transmitting = new HashSet<>();
     private final Set<TransmittingHandheldEntry> handheld = new HashSet<>();
+
+    public WirelessFrequencySavedData() {
+    }
 
     public WirelessFrequencySavedData(CompoundTag compoundTag) {
         ListTag receivers = compoundTag.getList("wireless_receivers", Tag.TAG_COMPOUND);

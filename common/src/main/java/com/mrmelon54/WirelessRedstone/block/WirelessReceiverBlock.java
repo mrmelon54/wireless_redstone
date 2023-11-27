@@ -1,5 +1,6 @@
 package com.mrmelon54.WirelessRedstone.block;
 
+import com.mrmelon54.WirelessRedstone.WirelessFrequencySavedData;
 import com.mrmelon54.WirelessRedstone.WirelessRedstone;
 import com.mrmelon54.WirelessRedstone.block.entity.WirelessReceiverBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -14,7 +15,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.Nullable;
 
 public class WirelessReceiverBlock extends WirelessFrequencyBlock {
-    protected WirelessReceiverBlock(Properties properties) {
+    public WirelessReceiverBlock(Properties properties) {
         super(properties);
     }
 
@@ -26,7 +27,9 @@ public class WirelessReceiverBlock extends WirelessFrequencyBlock {
 
     @Override
     public void onPlace(BlockState blockState, Level level, BlockPos blockPos, BlockState blockState2, boolean bl) {
-        // TODO: add global storage
+        WirelessFrequencySavedData dim = WirelessRedstone.getDimensionSavedData(level);
+        dim.getReceivers().add(blockPos.immutable());
+        dim.setDirty();
         WirelessRedstone.sendTickScheduleToReceivers(level);
     }
 
@@ -34,7 +37,9 @@ public class WirelessReceiverBlock extends WirelessFrequencyBlock {
     public void onRemove(BlockState blockState, Level level, BlockPos blockPos, BlockState blockState2, boolean bl) {
         if (blockState.hasBlockEntity() && !blockState.is(blockState2.getBlock())) {
             level.removeBlockEntity(blockPos);
-            // TODO: remove from global storage
+            WirelessFrequencySavedData dim = WirelessRedstone.getDimensionSavedData(level);
+            dim.getReceivers().remove(blockPos);
+            dim.setDirty();
         }
     }
 

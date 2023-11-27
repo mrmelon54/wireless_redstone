@@ -1,7 +1,7 @@
 package com.mrmelon54.WirelessRedstone.item;
 
+import com.mrmelon54.WirelessRedstone.WirelessFrequencySavedData;
 import com.mrmelon54.WirelessRedstone.WirelessRedstone;
-import com.mrmelon54.WirelessRedstone.screen.WirelessFrequencyContainerMenu;
 import com.mrmelon54.WirelessRedstone.util.TransmittingHandheldEntry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -15,6 +15,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -24,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class WirelessHandheldItem extends Item implements MenuProvider {
@@ -41,6 +43,11 @@ public class WirelessHandheldItem extends Item implements MenuProvider {
     }
 
     @Override
+    public boolean useOnRelease(ItemStack itemStack) {
+        return true;
+    }
+
+    @Override
     public @NotNull InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand interactionHand) {
         ItemStack itemStack = player.getItemInHand(interactionHand);
         if (player.isCrouching()) {
@@ -55,14 +62,20 @@ public class WirelessHandheldItem extends Item implements MenuProvider {
         compoundTag.putBoolean(WIRELESS_HANDHELD_ENABLED, v);
         int freq = compoundTag.getInt(WIRELESS_HANDHELD_FREQ);
 
+        WirelessFrequencySavedData dim = WirelessRedstone.getDimensionSavedData(level);
+
+        UUID uuid = compoundTag.getUUID(WIRELESS_HANDHELD_UUID);
+        dim.getHandheld().removeIf(x -> {
+            System.out.println(x.handheldUuid().toString() + " compared to " + uuid);
+            return x.handheldUuid().equals(uuid);
+        });
+
         if (v) {
-            UUID uuid = UUID.randomUUID();
+            UUID uuid2 = UUID.randomUUID();
             compoundTag.putUUID(WIRELESS_HANDHELD_UUID, uuid);
-            WirelessRedstone.getDimensionSavedData(level).getHandheld().add(new TransmittingHandheldEntry(uuid, freq));
-        } else {
-            UUID uuid = compoundTag.getUUID(WIRELESS_HANDHELD_UUID);
-            WirelessRedstone.getDimensionSavedData(level).getHandheld().removeIf(transmittingHandheldEntry -> transmittingHandheldEntry.handheldUuid().equals(uuid));
+            dim.getHandheld().add(new TransmittingHandheldEntry(uuid, freq));
         }
+        dim.setDirty();
 
         WirelessRedstone.sendTickScheduleToReceivers(level);
         return InteractionResultHolder.consume(itemStack);
@@ -89,7 +102,43 @@ public class WirelessHandheldItem extends Item implements MenuProvider {
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
-        return new WirelessFrequencyContainerMenu(i, inventory, player);
+        return new WirelessFrequencyContainerMenu(i, new ContainerData() {
+            @Override
+            public int get(int i) {
+                ItemStack stackInHand = player.getMainHandItem();
+                CompoundTag compound = WirelessHandheldItem.getOrCreateNbt(stackInHand);
+                if (compound == null) return 0;
+                return compound.getInt(WIRELESS_HANDHELD_FREQ);
+            }
+
+            @Override
+            public void set(int i, int j) {
+                ItemStack stackInHand = player.getMainHandItem();
+                CompoundTag compound = WirelessHandheldItem.getOrCreateNbt(stackInHand);
+                if (compound == null) return;
+
+                boolean enabled = compound.getBoolean(WirelessHandheldItem.WIRELESS_HANDHELD_ENABLED);
+                compound.putInt(WirelessHandheldItem.WIRELESS_HANDHELD_FREQ, i);
+
+                // remove old transmit signal and replace it
+                Set<TransmittingHandheldEntry> handheld = WirelessRedstone.getDimensionSavedData(player.level()).getHandheld();
+                if (enabled) {
+                    UUID uuid = compound.getUUID(WirelessHandheldItem.WIRELESS_HANDHELD_UUID);
+                    handheld.removeIf(x -> x.handheldUuid().equals(uuid));
+
+                    UUID uuid1 = UUID.randomUUID();
+                    compound.putUUID(WirelessHandheldItem.WIRELESS_HANDHELD_UUID, uuid1);
+                    handheld.add(new TransmittingHandheldEntry(uuid1, i));
+                }
+
+                WirelessRedstone.sendTickScheduleToReceivers(player.level());
+            }
+
+            @Override
+            public int getCount() {
+                return 1;
+            }
+        });
     }
 
     public static CompoundTag getOrCreateNbt(ItemStack itemStack) {
@@ -117,7 +166,9 @@ public class WirelessHandheldItem extends Item implements MenuProvider {
         UUID uuid = compoundTag.getUUID(WIRELESS_HANDHELD_UUID);
         compoundTag.putBoolean(WIRELESS_HANDHELD_ENABLED, false);
 
-        WirelessRedstone.getDimensionSavedData(itemEntity.level()).getHandheld().removeIf(transmittingHandheldEntry -> transmittingHandheldEntry.handheldUuid().equals(uuid));
+        WirelessFrequencySavedData dim = WirelessRedstone.getDimensionSavedData(itemEntity.level());
+        dim.getHandheld().removeIf(transmittingHandheldEntry -> transmittingHandheldEntry.handheldUuid().equals(uuid));
+        dim.setDirty();
 
         WirelessRedstone.sendTickScheduleToReceivers(itemEntity.level());
     }
