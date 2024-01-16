@@ -1,6 +1,6 @@
 modLoader = "javafml"
-loaderVersion = "[46,)"
-issueTrackerURL = "https://github.com/MrMelon54/wireless_redstone/issues"
+loaderVersion = "*"
+issueTrackerURL = "https://github.com/mrmelon54/wireless_redstone/issues"
 license = "GPL-3.0-only"
 
 [[mods]]
@@ -8,26 +8,19 @@ modId = "wireless_redstone"
 version = "${version}"
 displayName = "Wireless Redstone"
 authors = "MrMelon54"
-description = "Wireless Redstone, what more can I say?"
+description = "${description}"
 logoFile = "/icon.png"
-
-[[dependencies.wireless_redstone]]
-modId = "forge"
-mandatory = true
-versionRange = "[46,)"
-ordering = "NONE"
-side = "BOTH"
 
 [[dependencies.wireless_redstone]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.20,)"
+versionRange = "[${minecraft_version},)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.wireless_redstone]]
 modId = "architectury"
 mandatory = true
-versionRange = "[9.0.0,)"
-ordering = "AFTER"
+versionRange = "[${architectury_version},)"
+ordering = "NONE"
 side = "BOTH"
