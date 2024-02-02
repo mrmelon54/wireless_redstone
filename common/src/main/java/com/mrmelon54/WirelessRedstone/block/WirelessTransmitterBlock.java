@@ -1,11 +1,13 @@
 package com.mrmelon54.WirelessRedstone.block;
 
+import com.mojang.serialization.MapCodec;
 import com.mrmelon54.WirelessRedstone.WirelessFrequencySavedData;
 import com.mrmelon54.WirelessRedstone.WirelessRedstone;
 import com.mrmelon54.WirelessRedstone.block.entity.WirelessTransmitterBlockEntity;
 import com.mrmelon54.WirelessRedstone.util.TransmittingFrequencyEntry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -16,8 +18,15 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 public class WirelessTransmitterBlock extends WirelessFrequencyBlock {
+    public static final MapCodec<WirelessTransmitterBlock> CODEC = simpleCodec(WirelessTransmitterBlock::new);
+
     public WirelessTransmitterBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
     }
 
     @Override

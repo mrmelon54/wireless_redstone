@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.NotNull;
 
@@ -97,5 +98,9 @@ public class WirelessFrequencySavedData extends SavedData implements WirelessFre
     @Override
     public Set<TransmittingHandheldEntry> getHandheld() {
         return handheld;
+    }
+
+    public static Factory<WirelessFrequencySavedData> factory() {
+        return new Factory<>(WirelessFrequencySavedData::new, WirelessFrequencySavedData::new, DataFixTypes.LEVEL);
     }
 }

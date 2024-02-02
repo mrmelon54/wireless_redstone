@@ -25,14 +25,14 @@ public class WirelessFrequencyScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int i, int j, float f) {
-        renderBackground(guiGraphics);
+        renderBackground(guiGraphics, i, j, f);
         super.render(guiGraphics, i, j, f);
         freqBox.render(guiGraphics, i, j, f);
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics) {
-        super.renderBackground(guiGraphics);
+    public void renderBackground(GuiGraphics guiGraphics, int i, int j, float f) {
+        super.renderBackground(guiGraphics, i, j, f);
         guiGraphics.blit(MENU_LOCATION, (width - 176) / 2, (height - 50) / 2, 0, 0, 176, 50);
     }
 

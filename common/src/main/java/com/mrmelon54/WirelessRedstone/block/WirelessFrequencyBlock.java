@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class WirelessFrequencyBlock extends BaseEntityBlock {
+public abstract class WirelessFrequencyBlock extends  BaseEntityBlock {
     protected WirelessFrequencyBlock(Properties properties) {
         super(properties);
         registerDefaultState(defaultBlockState().setValue(BlockStateProperties.LIT, false));

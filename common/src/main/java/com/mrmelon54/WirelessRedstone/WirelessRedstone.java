@@ -24,17 +24,21 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 
 import java.util.HashMap;
@@ -97,7 +101,7 @@ public class WirelessRedstone {
 
         LifecycleEvent.SERVER_LEVEL_LOAD.register(world -> {
             DimensionDataStorage dataStorage = world.getDataStorage();
-            WirelessFrequencySavedData savedData = dataStorage.computeIfAbsent(WirelessFrequencySavedData::new, WirelessFrequencySavedData::new, MOD_ID);
+            WirelessFrequencySavedData savedData = dataStorage.computeIfAbsent(WirelessFrequencySavedData.factory(), MOD_ID);
             levelData.put(world.dimension(), savedData);
             dataStorage.set(MOD_ID, savedData);
         });
