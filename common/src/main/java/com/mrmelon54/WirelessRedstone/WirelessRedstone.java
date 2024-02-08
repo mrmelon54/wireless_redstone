@@ -40,6 +40,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +50,7 @@ import java.util.function.ToIntFunction;
 
 public class WirelessRedstone {
     public static final String MOD_ID = "wireless_redstone";
+    public static final Logger LOGGER = LoggerFactory.getLogger(WirelessRedstone.class);
 
     public static final Block WIRELESS_TRANSMITTER = new WirelessTransmitterBlock(BlockBehaviour.Properties.of().strength(0).lightLevel(litFrequencyBlockEmission()).sound(SoundType.METAL));
     public static final BlockItem WIRELESS_TRANSMITTER_ITEM = new BlockItem(WIRELESS_TRANSMITTER, new Item.Properties().stacksTo(64));

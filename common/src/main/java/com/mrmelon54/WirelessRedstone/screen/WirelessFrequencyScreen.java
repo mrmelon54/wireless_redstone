@@ -72,7 +72,6 @@ public class WirelessFrequencyScreen extends Screen {
     }
 
     private void onFreqChanged(String s) {
-        System.out.println("on freq changed: " + s);
         int freq = 0;
         if (!Objects.equals(s, ""))
             freq = Integer.parseInt(s);

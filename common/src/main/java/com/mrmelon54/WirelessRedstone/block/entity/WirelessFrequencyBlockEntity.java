@@ -12,7 +12,6 @@ public class WirelessFrequencyBlockEntity<T extends WirelessFrequencyBlockEntity
 
     public WirelessFrequencyBlockEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState blockState) {
         super(blockEntityType, blockPos, blockState);
-        frequency = 0;
     }
 
     @Override
@@ -34,5 +33,6 @@ public class WirelessFrequencyBlockEntity<T extends WirelessFrequencyBlockEntity
 
     public void setFrequency(int frequency) {
         this.frequency = frequency;
+        setChanged();
     }
 }
