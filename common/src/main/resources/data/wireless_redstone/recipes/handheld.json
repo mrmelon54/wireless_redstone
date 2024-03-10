@@ -1,9 +1,9 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
+    "ISI",
     "IEI",
-    "ERE",
-    "IEI"
+    "IRI"
   ],
   "key": {
     "I": {
@@ -14,10 +14,13 @@
     },
     "R": {
       "item": "minecraft:redstone"
+    },
+    "S": {
+      "item": "minecraft:string"
     }
   },
   "result": {
-    "item": "wireless-redstone:transmitter",
+    "item": "wireless_redstone:handheld",
     "count": 1
   }
 }

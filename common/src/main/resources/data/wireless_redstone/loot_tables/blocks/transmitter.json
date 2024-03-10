@@ -6,7 +6,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "wireless-redstone:transmitter"
+          "name": "wireless_redstone:transmitter"
         }
       ],
       "conditions": [

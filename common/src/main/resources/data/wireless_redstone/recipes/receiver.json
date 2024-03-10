@@ -17,7 +17,7 @@
     }
   },
   "result": {
-    "item": "wireless-redstone:receiver",
+    "item": "wireless_redstone:receiver",
     "count": 1
   }
 }
