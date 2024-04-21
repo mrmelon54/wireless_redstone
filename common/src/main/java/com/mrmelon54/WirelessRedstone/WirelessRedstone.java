@@ -6,39 +6,40 @@ import com.mrmelon54.WirelessRedstone.block.WirelessTransmitterBlock;
 import com.mrmelon54.WirelessRedstone.block.entity.WirelessReceiverBlockEntity;
 import com.mrmelon54.WirelessRedstone.block.entity.WirelessTransmitterBlockEntity;
 import com.mrmelon54.WirelessRedstone.item.WirelessHandheldItem;
+import com.mrmelon54.WirelessRedstone.menu.WirelessFrequencyMenu;
 import com.mrmelon54.WirelessRedstone.models.HandheldModelProvider;
 import com.mrmelon54.WirelessRedstone.packet.BlockFrequencyChangeC2SPacket;
 import com.mrmelon54.WirelessRedstone.packet.HandheldFrequencyChangeC2SPacket;
+import com.mrmelon54.WirelessRedstone.screen.WirelessFrequencyScreen;
 import com.mrmelon54.WirelessRedstone.util.HandheldItemUtils;
 import com.mrmelon54.WirelessRedstone.util.NetworkingConstants;
+import dev.architectury.event.events.client.ClientLifecycleEvent;
 import dev.architectury.event.events.common.ChunkEvent;
 import dev.architectury.event.events.common.LifecycleEvent;
 import dev.architectury.event.events.common.PlayerEvent;
 import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.item.ItemPropertiesRegistry;
+import dev.architectury.registry.menu.MenuRegistry;
 import dev.architectury.registry.registries.Registrar;
 import dev.architectury.registry.registries.RegistrarManager;
+import dev.architectury.registry.registries.RegistrySupplier;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,7 @@ public class WirelessRedstone {
     public static final Item WIRELESS_HANDHELD = new WirelessHandheldItem(new Item.Properties().stacksTo(1));
     public static BlockEntityType<WirelessTransmitterBlockEntity> WIRELESS_TRANSMITTER_BLOCK_ENTITY;
     public static BlockEntityType<WirelessReceiverBlockEntity> WIRELESS_RECEIVER_BLOCK_ENTITY;
+    public static RegistrySupplier<MenuType<WirelessFrequencyMenu>> WIRELESS_FREQUENCY_MENU;
 
     public static final Supplier<RegistrarManager> MANAGER = Suppliers.memoize(() -> RegistrarManager.get(MOD_ID));
 
@@ -99,6 +101,8 @@ public class WirelessRedstone {
 
         itemReg.register(new ResourceLocation(MOD_ID, "handheld"), () -> WIRELESS_HANDHELD);
 
+        WIRELESS_FREQUENCY_MENU = menuReg.register(new ResourceLocation(MOD_ID, "set_frequency_menu"), () -> MenuRegistry.ofExtended(WirelessFrequencyMenu::new));
+
         NetworkingConstants.CHANNEL.register(BlockFrequencyChangeC2SPacket.class, BlockFrequencyChangeC2SPacket::encode, BlockFrequencyChangeC2SPacket::decode, BlockFrequencyChangeC2SPacket::apply);
         NetworkingConstants.CHANNEL.register(HandheldFrequencyChangeC2SPacket.class, HandheldFrequencyChangeC2SPacket::encode, HandheldFrequencyChangeC2SPacket::decode, HandheldFrequencyChangeC2SPacket::apply);
 
@@ -108,6 +112,7 @@ public class WirelessRedstone {
             levelData.put(world.dimension(), savedData);
             dataStorage.set(MOD_ID, savedData);
         });
+        ClientLifecycleEvent.CLIENT_SETUP.register(instance -> MenuRegistry.registerScreenFactory(WIRELESS_FREQUENCY_MENU.get(), WirelessFrequencyScreen::new));
 
         clientInit();
     }

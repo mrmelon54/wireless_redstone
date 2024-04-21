@@ -1,25 +1,29 @@
 package com.mrmelon54.WirelessRedstone.screen;
 
-import com.mrmelon54.WirelessRedstone.util.NetworkingConstants;
+import com.mrmelon54.WirelessRedstone.menu.WirelessFrequencyMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.entity.player.Inventory;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.function.Function;
 
-public class WirelessFrequencyScreen extends Screen {
+public class WirelessFrequencyScreen extends Screen implements MenuAccess<WirelessFrequencyMenu> {
     private static final ResourceLocation MENU_LOCATION = new ResourceLocation("wireless_redstone:textures/gui/frequency.png");
-    private final Function<Integer, ?> genPacket;
+    private final WirelessFrequencyMenu containerMenu;
+    private final Inventory inventory;
     private EditBox freqBox;
 
-    public WirelessFrequencyScreen(Function<Integer, ?> genPacket) {
+    public WirelessFrequencyScreen(WirelessFrequencyMenu containerMenu, Inventory inventory, Component component) {
         super(Component.translatable("screen.wireless_redstone.set_frequency"));
-        this.genPacket = genPacket;
+        this.containerMenu = containerMenu;
+        this.inventory = inventory;
         init();
     }
 
@@ -75,6 +79,11 @@ public class WirelessFrequencyScreen extends Screen {
         int freq = 0;
         if (!Objects.equals(s, ""))
             freq = Integer.parseInt(s);
-        NetworkingConstants.CHANNEL.sendToServer(genPacket.apply(freq));
+        containerMenu.sendResponseMessage(freq);
+    }
+
+    @Override
+    public @NotNull WirelessFrequencyMenu getMenu() {
+        return containerMenu;
     }
 }

@@ -2,19 +2,22 @@ package com.mrmelon54.WirelessRedstone.item;
 
 import com.mrmelon54.WirelessRedstone.WirelessFrequencySavedData;
 import com.mrmelon54.WirelessRedstone.WirelessRedstone;
-import com.mrmelon54.WirelessRedstone.packet.HandheldFrequencyChangeC2SPacket;
-import com.mrmelon54.WirelessRedstone.screen.WirelessFrequencyScreen;
 import com.mrmelon54.WirelessRedstone.util.TransmittingHandheldEntry;
+import dev.architectury.registry.menu.ExtendedMenuProvider;
+import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -50,8 +53,24 @@ public class WirelessHandheldItem extends Item {
         ItemStack itemStack = player.getItemInHand(interactionHand);
 
         if (player.isCrouching()) {
-            if (player.isLocalPlayer())
-                Minecraft.getInstance().setScreen(new WirelessFrequencyScreen(HandheldFrequencyChangeC2SPacket::new));
+            if (!player.isLocalPlayer() && player instanceof ServerPlayer serverPlayer) {
+                MenuRegistry.openExtendedMenu(serverPlayer, new ExtendedMenuProvider() {
+                    @Override
+                    public void saveExtraData(FriendlyByteBuf buf) {
+                        buf.writeBoolean(true); // is handheld
+                    }
+
+                    @Override
+                    public Component getDisplayName() {
+                        return Component.translatable("screen.wireless_redstone.set_frequency");
+                    }
+
+                    @Override
+                    public @NotNull AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
+                        return WirelessRedstone.WIRELESS_FREQUENCY_MENU.get().create(i, inventory);
+                    }
+                });
+            }
             return InteractionResultHolder.pass(itemStack);
         }
 
