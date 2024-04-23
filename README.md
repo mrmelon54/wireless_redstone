@@ -1,18 +1,11 @@
 # Melon Wireless Redstone
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W1607S8)
-
-In the latest version cardinal components is replaced with vanilla functionality.
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mrmelon54)
 
 ## Setup
 
 - Drop the mod in the mods folder
-
-## Details
-
-My version of a simple wireless redstone transmitter and receiver.
-
-The crafting recipes are in the images tab/folder.
+- Requires [Infrastructury](https://modrinth.com/mod/infrastructury) and [Architectury API](https://modrinth.com/mod/architectury-api)
 
 ## Usage
 

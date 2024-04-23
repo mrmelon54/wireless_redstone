@@ -1,8 +1,8 @@
 package com.mrmelon54.WirelessRedstone.block;
 
 import com.mrmelon54.WirelessRedstone.WirelessRedstone;
-import dev.architectury.registry.menu.ExtendedMenuProvider;
-import dev.architectury.registry.menu.MenuRegistry;
+import com.mrmelon54.infrastructury.registry.menu.ExtendedMenuProvider;
+import com.mrmelon54.infrastructury.registry.menu.MenuRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -46,7 +46,7 @@ public abstract class WirelessFrequencyBlock extends BaseEntityBlock {
                 }
 
                 @Override
-                public Component getDisplayName() {
+                public @NotNull Component getDisplayName() {
                     return Component.translatable("screen.wireless_redstone.set_frequency");
                 }
 

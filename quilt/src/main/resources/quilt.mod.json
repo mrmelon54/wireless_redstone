@@ -26,6 +26,9 @@
     "entrypoints": {
       "init": [
         "com.mrmelon54.WirelessRedstone.quilt.WirelessRedstoneQuilt"
+      ],
+      "modmenu": [
+        "com.mrmelon54.WirelessRedstone.ModMenuIntegration"
       ]
     },
     "depends": [
@@ -39,15 +42,19 @@
       },
       {
         "id": "minecraft",
-        "version": "${minecraft_version}"
+        "version": $compatible_minecraft_versions
       },
       {
-        "id": "architectury",
-        "version": ">=${architectury_version}"
+        "id": "infrastructury",
+        "version": ">=${infrastructury_version}"
+      },
+      {
+        "id": "cloth-config",
+        "version": ">=${cloth_config_version}"
       }
     ]
   },
   "minecraft": {
-    "environment": "*"
+    "environment": "client"
   }
 }

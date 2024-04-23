@@ -1,5 +1,5 @@
 architectury {
-    common(rootProject.enabled_platforms.split(","))
+    common(rootProject.builds_for.split(","))
 }
 
 loom {
@@ -10,8 +10,13 @@ dependencies {
     // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
     // Do NOT use other classes from fabric loader
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
-    // Remove the next line if you don't want to depend on the API
-    modApi "dev.architectury:architectury:${rootProject.architectury_version}"
+
+    modApi("me.shedaniel.cloth:cloth-config-fabric:${rootProject.cloth_config_version}") {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+    modApi("com.terraformersmc:modmenu:${rootProject.modmenu_version}") {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
 }
 
 publishing {

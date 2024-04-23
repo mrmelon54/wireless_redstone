@@ -13,16 +13,17 @@ import com.mrmelon54.WirelessRedstone.packet.HandheldFrequencyChangeC2SPacket;
 import com.mrmelon54.WirelessRedstone.screen.WirelessFrequencyScreen;
 import com.mrmelon54.WirelessRedstone.util.HandheldItemUtils;
 import com.mrmelon54.WirelessRedstone.util.NetworkingConstants;
-import dev.architectury.event.events.client.ClientLifecycleEvent;
-import dev.architectury.event.events.common.ChunkEvent;
-import dev.architectury.event.events.common.LifecycleEvent;
-import dev.architectury.event.events.common.PlayerEvent;
-import dev.architectury.registry.CreativeTabRegistry;
-import dev.architectury.registry.item.ItemPropertiesRegistry;
-import dev.architectury.registry.menu.MenuRegistry;
-import dev.architectury.registry.registries.Registrar;
-import dev.architectury.registry.registries.RegistrarManager;
-import dev.architectury.registry.registries.RegistrySupplier;
+import com.mrmelon54.infrastructury.Infrastructury;
+import com.mrmelon54.infrastructury.event.events.client.ClientLifecycleEvent;
+import com.mrmelon54.infrastructury.event.events.common.ChunkEvent;
+import com.mrmelon54.infrastructury.event.events.common.LifecycleEvent;
+import com.mrmelon54.infrastructury.event.events.common.PlayerEvent;
+import com.mrmelon54.infrastructury.registry.CreativeTabRegistry;
+import com.mrmelon54.infrastructury.registry.item.ItemPropertiesRegistry;
+import com.mrmelon54.infrastructury.registry.menu.MenuRegistry;
+import com.mrmelon54.infrastructury.registry.registries.Registrar;
+import com.mrmelon54.infrastructury.registry.registries.RegistrarManager;
+import com.mrmelon54.infrastructury.registry.registries.RegistrySupplier;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.core.registries.Registries;
@@ -48,9 +49,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
+import net.minecraft.client.gui.screens.Screen;
 
 public class WirelessRedstone {
     public static final String MOD_ID = "wireless_redstone";
+    public static ConfigStructure CONFIG = AutoConfig.register(ConfigStructure.class, JanksonConfigSerializer::new).get();
     public static final Logger LOGGER = LoggerFactory.getLogger(WirelessRedstone.class);
 
     public static final Block WIRELESS_TRANSMITTER = new WirelessTransmitterBlock(BlockBehaviour.Properties.of().strength(0).lightLevel(litFrequencyBlockEmission()).sound(SoundType.METAL));
@@ -81,7 +86,6 @@ public class WirelessRedstone {
             HandheldItemUtils.addHandheldFromPlayer(player, player.server.getLevel(newLevel));
         });
 
-        //noinspection UnstableApiUsage
         CreativeTabRegistry.append(CreativeModeTabs.REDSTONE_BLOCKS, WIRELESS_RECEIVER_ITEM, WIRELESS_TRANSMITTER_ITEM, WIRELESS_HANDHELD);
 
         Registrar<MenuType<?>> menuReg = MANAGER.get().get(Registries.MENU);
@@ -112,7 +116,7 @@ public class WirelessRedstone {
             levelData.put(world.dimension(), savedData);
             dataStorage.set(MOD_ID, savedData);
         });
-        ClientLifecycleEvent.CLIENT_SETUP.register(instance -> MenuRegistry.registerScreenFactory(WIRELESS_FREQUENCY_MENU.get(), WirelessFrequencyScreen::new));
+        ClientLifecycleEvent.CLIENT_SETUP.register(instance -> MenuRegistry.registerScreenFactory(WIRELESS_FREQUENCY_MENU.get(), (containerMenu, inventory, component) -> new WirelessFrequencyScreen(containerMenu)));
 
         clientInit();
     }
@@ -120,6 +124,7 @@ public class WirelessRedstone {
     @Environment(EnvType.CLIENT)
     public static void clientInit() {
         ItemPropertiesRegistry.register(WirelessRedstone.WIRELESS_HANDHELD, new ResourceLocation("wireless_redstone_handheld_enabled"), new HandheldModelProvider());
+        Infrastructury.registerConfigScreen((mc,screen)->createConfigScreen(screen).get());
     }
 
     public static void sendTickScheduleToReceivers(Level level) {
@@ -133,5 +138,9 @@ public class WirelessRedstone {
 
     private static ToIntFunction<BlockState> litFrequencyBlockEmission() {
         return (blockState) -> blockState.getValue(BlockStateProperties.LIT) ? 7 : 0;
+    }
+
+    public static Supplier<Screen> createConfigScreen(Screen screen) {
+        return AutoConfig.getConfigScreen(ConfigStructure.class, screen);
     }
 }

@@ -9,7 +9,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -17,13 +16,11 @@ import java.util.Objects;
 public class WirelessFrequencyScreen extends Screen implements MenuAccess<WirelessFrequencyMenu> {
     private static final ResourceLocation MENU_LOCATION = new ResourceLocation("wireless_redstone:textures/gui/frequency.png");
     private final WirelessFrequencyMenu containerMenu;
-    private final Inventory inventory;
     private EditBox freqBox;
 
-    public WirelessFrequencyScreen(WirelessFrequencyMenu containerMenu, Inventory inventory, Component component) {
+    public WirelessFrequencyScreen(WirelessFrequencyMenu containerMenu) {
         super(Component.translatable("screen.wireless_redstone.set_frequency"));
         this.containerMenu = containerMenu;
-        this.inventory = inventory;
         init();
     }
 

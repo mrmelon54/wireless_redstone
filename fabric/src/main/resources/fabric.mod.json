@@ -18,6 +18,9 @@
   "entrypoints": {
     "main": [
       "com.mrmelon54.WirelessRedstone.fabric.WirelessRedstoneFabric"
+    ],
+    "modmenu": [
+      "com.mrmelon54.WirelessRedstone.ModMenuIntegration"
     ]
   },
   "mixins": [
@@ -26,7 +29,8 @@
   ],
   "depends": {
     "fabric": "*",
-    "minecraft": "${minecraft_version}",
-    "architectury": ">=${architectury_version}"
+    "minecraft": $compatible_minecraft_versions,
+    "infrastructury": ">=${infrastructury_version}",
+    "cloth-config${cloth_config_old}": ">=${cloth_config_version}"
   }
 }

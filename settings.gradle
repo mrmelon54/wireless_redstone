@@ -3,14 +3,78 @@ pluginManagement {
         maven { url "https://maven.fabricmc.net/" }
         maven { url "https://maven.architectury.dev/" }
         maven { url "https://maven.minecraftforge.net/" }
+        maven { url "https://maven.neoforged.net/releases/" }
+        maven { url "https://maven.parchmentmc.org" }
         gradlePluginPortal()
     }
 }
 
+gradle.ext.set("versionStr", "")
+gradle.ext.set("compatible_forge_versions", "")
+gradle.ext.set("forgix_merged_jar", "")
+
+// Loads the version.properties
+def loadProperties() {
+    def defaultMcVersion = ""
+    def mcVersion = ""
+    def mcVers = fileTree("versionProperties").files.name // Get all the files in "versionProperties"
+    for (int i = 0; i < mcVers.size(); i++) {
+        mcVers[i] = mcVers[i].replaceAll("\\.properties", "") // As we are getting the file names, we should remove the ".properties" at the end to get the versions
+    }
+    assert mcVers.size > 0
+
+    mcVers.sort() // Sort so it always goes from oldest to newest
+    defaultMcVersion = mcVers[mcVers.size - 1]
+
+    File mcVerPropsFile = file("mcver.properties")
+    if (!mcVerPropsFile.exists()) {
+        mcVerPropsFile.text = "# Modify this property to edit the local Minecraft version to use when compiling\nmcVer=" + defaultMcVersion + "\n"
+    }
+
+    println "Avalible MC versions: ${mcVers}"
+    if (hasProperty("mcVer")) {
+        println "Using mcVer command line argument"
+        mcVersion = mcVer
+    } else {
+        println "Using mcver.properties file"
+        def mcVerProps = new Properties()
+        mcVerProps.load(new FileInputStream(mcVerPropsFile))
+        mcVersion = mcVerProps.get("mcVer")
+    }
+
+    int mcIndex = mcVers.indexOf(mcVersion)
+    if (mcIndex == -1) {
+        println "No mcVer set or the set mcVer is invalid! Defaulting to ${defaultMcVersion}."
+        println "Tip: Use -PmcVer=\"${defaultMcVersion}\" in cmd arg to set mcVer."
+        mcVersion = defaultMcVersion
+        mcIndex = mcVers.indexOf(defaultMcVersion)
+        assert mcIndex != -1
+    }
+
+    println "Loading properties file at " + mcVersion + ".properties"
+    def props = new Properties()
+    props.load(new FileInputStream("$rootDir/versionProperties/" + "$mcVersion" + ".properties"))
+
+    props.each { prop ->
+        gradle.ext.set(prop.key, prop.value)
+        // println "Added prop [key:" + prop.key + ", value:" + prop.value + "]"
+    }
+    gradle.ext.mcVers = mcVers
+    gradle.ext.mcIndex = mcIndex
+}
+
+loadProperties()
+
+
+// include projects
 include("common")
-include("fabric-like")
-include("fabric")
-include("quilt")
-include("forge")
+
+var builds_for = ((String) gradle.builds_for).split(",")
+
+for (loader in builds_for) {
+    def l = loader.strip()
+    println "Adding loader " + l
+    include(l)
+}
 
 rootProject.name = "wireless_redstone"

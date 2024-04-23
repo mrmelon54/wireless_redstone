@@ -3,7 +3,7 @@ package com.mrmelon54.WirelessRedstone.packet;
 import com.mrmelon54.WirelessRedstone.WirelessRedstone;
 import com.mrmelon54.WirelessRedstone.item.WirelessHandheldItem;
 import com.mrmelon54.WirelessRedstone.util.TransmittingHandheldEntry;
-import dev.architectury.networking.NetworkManager;
+import com.mrmelon54.infrastructury.networking.NetworkManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;

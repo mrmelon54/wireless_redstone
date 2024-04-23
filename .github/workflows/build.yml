@@ -3,20 +3,57 @@ name: Java CI
 on: [ push ]
 
 jobs:
-  build:
+  resolve-versions:
+    name: "Resolve Versions"
     runs-on: ubuntu-latest
-
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v3
+      - run: sudo apt-get update && sudo apt-get install -y jo
+      - uses: actions/checkout@v4
+      - id: set-matrix
+        run: ./resolveversions.sh >> $GITHUB_OUTPUT
+
+  build:
+    needs: resolve-versions
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.resolve-versions.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: "17"
-          distribution: "adopt"
-
+          distribution: "temurin"
       - name: Build
-        run: ./gradlew build
+        run: ./buildsingle.sh "${{ matrix.mc }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "buildAllJars-${{matrix.mc}}"
+          path: buildAllJars/*.jar
+          if-no-files-found: error
 
-      - name: Deploy
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: buildAllJars
+          pattern: buildAllJars-*
+          merge-multiple: true
+      - name: Files
+        run: |
+          #!/bin/bash
+          ls -1 ./buildAllJars/*.jar
+      - name: Publish
         if: startsWith(github.ref, 'refs/tags/v')
-        run: 'curl --fail -X POST -H "Authorization: Bearer ${{ secrets.DEPLOY }}" -F "upload=@$(ls -1 build/libs/merged/*.jar)" https://api.mrmelon54.com/v1/mc-upload/upload/wireless-redstone'
+        run: |
+          #!/bin/bash
+          while read -r filename; do
+            curl --fail -X POST -H "Authorization: Bearer ${{ secrets.DEPLOY }}" -F "upload=@$filename" https://api.mrmelon54.com/v1/mc-upload/upload/wireless-redstone
+          done < <(find ./buildAllJars/ -name '*.jar' -type f)

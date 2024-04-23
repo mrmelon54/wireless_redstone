@@ -3,8 +3,8 @@ package com.mrmelon54.WirelessRedstone.item;
 import com.mrmelon54.WirelessRedstone.WirelessFrequencySavedData;
 import com.mrmelon54.WirelessRedstone.WirelessRedstone;
 import com.mrmelon54.WirelessRedstone.util.TransmittingHandheldEntry;
-import dev.architectury.registry.menu.ExtendedMenuProvider;
-import dev.architectury.registry.menu.MenuRegistry;
+import com.mrmelon54.infrastructury.registry.menu.ExtendedMenuProvider;
+import com.mrmelon54.infrastructury.registry.menu.MenuRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -61,7 +61,7 @@ public class WirelessHandheldItem extends Item {
                     }
 
                     @Override
-                    public Component getDisplayName() {
+                    public @NotNull Component getDisplayName() {
                         return Component.translatable("screen.wireless_redstone.set_frequency");
                     }
 
